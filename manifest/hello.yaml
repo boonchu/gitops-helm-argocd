@@ -1,0 +1,82 @@
+---
+# Source: hello-app/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hello-hello-app
+  labels:
+    helm.sh/chart: hello-app-0.1.0
+    app.kubernetes.io/name: hello-app
+    app.kubernetes.io/instance: hello
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: hello-app/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-hello-app
+  labels:
+    helm.sh/chart: hello-app-0.1.0
+    app.kubernetes.io/name: hello-app
+    app.kubernetes.io/instance: hello
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: hello-app
+    app.kubernetes.io/instance: hello
+---
+# Source: hello-app/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-hello-app
+  labels:
+    helm.sh/chart: hello-app-0.1.0
+    app.kubernetes.io/name: hello-app
+    app.kubernetes.io/instance: hello
+    app.kubernetes.io/version: "1.16.0"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hello-app
+      app.kubernetes.io/instance: hello
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hello-app
+        app.kubernetes.io/instance: hello
+    spec:
+      serviceAccountName: hello-hello-app
+      securityContext:
+        {}
+      containers:
+        - name: hello-app
+          securityContext:
+            {}
+          image: "nginx:1.16.0"
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          resources:
+            {}
+
